@@ -13,3 +13,5 @@ body.immersive .panel-head,body.immersive .panel-foot{padding:9px 14px}
 body.immersive .settings{padding:16px 0}
 body.immersive .paper .empty{opacity:.6}
 @media(max-width:700px){body.immersive .workspace{max-width:100%}body.immersive main{padding-top:12px}}
+
+#shadow-state{position:absolute;left:14px;top:14px;right:14px;z-index:2;pointer-events:none;font-size:11px;color:#6b746e}#shadow-state.error{color:#ae4936}body.immersive .paper .empty{display:none}

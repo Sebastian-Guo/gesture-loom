@@ -1,4 +1,4 @@
-import {createShadowRenderer} from './shadow.mjs';
+import {createShadowRenderer} from './shadow.mjs?v=pixel1';
 import {FadeHistory} from './fade.mjs';
 import {CHAINS,clamp,openness,orientation,distance,mapPoint,contain,assignHands} from './geometry.mjs';
 const $=id=>document.getElementById(id),W=1200,H=900;
@@ -8,8 +8,8 @@ let mode='ribbon',palette='mineral',source='none',paused=false,stream=null,worke
 let fading=false,replaying=false,fadeAmount=1,lastFadeRender=0;
 const history=new FadeHistory();
 let immersive=false;
-const renderShadows=createShadowRenderer($('shadows'));
-function setImmersive(value){immersive=value;document.body.classList.toggle('immersive',value);$('shadows').hidden=!value;$('immersive').setAttribute('aria-pressed',String(value));$('immersive').textContent=value?'Exit immersive mode':'Immersive mode';renderShadows(value?current.map(h=>h.shadowPoints):[]);}
+const shadowRenderer=createShadowRenderer($('shadows'),(text,error)=>{ $('shadow-state').textContent=text;$('shadow-state').classList.toggle('error',error); });
+function setImmersive(value){immersive=value;document.body.classList.toggle('immersive',value);$('shadows').hidden=!value;$('immersive').setAttribute('aria-pressed',String(value));$('immersive').textContent=value?'Exit immersive mode':'Immersive mode';shadowRenderer.reset();if(value)shadowRenderer.retry();$('shadow-state').hidden=!value;}
 $('immersive').onclick=()=>setImmersive(!immersive);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('guide').open)setImmersive(false);});
 let rect=contain(640,480),width=12,smoothing=.65,opacity=.35;
@@ -42,7 +42,7 @@ $('fade').onclick=()=>{
 };
 
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
-function resetTracks(){tracks.clear();current=[];lastDraw=0;renderShadows([]);octx.clearRect(0,0,W,H);}
+function resetTracks(){tracks.clear();current=[];lastDraw=0;shadowRenderer.reset();octx.clearRect(0,0,W,H);}
 function color(id,i=0){if(palette==='ink')return '#344348';if(palette==='spectrum')return `hsl(${(id*165+i*28+15)%360} 48% 53%)`;return id===0?'#bd6b50':'#508991';}
 function mark(){hasArt=true;$('empty').hidden=true;}
 function setPaused(value){paused=value;resetTracks();$('pause').textContent=paused?'▶ Resume':'Ⅱ Pause';$('drawing-state').textContent=paused?'Paused':source==='none'?'Waiting for input':'Drawing';}
@@ -79,5 +79,5 @@ for(const h of current){if($('skeleton').checked){for(const chain of CHAINS){con
 for(let i=0;i<5;i++){const f=h.fingers[i];vctx.beginPath();vctx.arc(f.p.x,f.p.y,Math.max(4,f.width*.75),0,Math.PI*2);vctx.strokeStyle=f.active?color(h.id,i):'#adb9ad';vctx.lineWidth=f.active?3:1;vctx.stroke();if(f.active){vctx.beginPath();vctx.arc(f.p.x,f.p.y,2.5,0,Math.PI*2);vctx.fillStyle='#fff9e6';vctx.fill();}}}
 }
 function demoResult(t){const landmarks=[],worldLandmarks=[];for(let id=0;id<2;id++){const sign=id?1:-1,rotation=sign*.3+Math.sin(t*.47+id)*.65,cx=.5+sign*.18+Math.sin(t*.65+id)*.085,cy=.61+Math.cos(t*.53+id)*.09;const p=Array.from({length:21},()=>({x:0,y:0,z:0}));for(let i=0;i<5;i++){const chain=CHAINS[i],spread=(i-2)*(.06+.02*Math.sin(t*.8));for(let j=0;j<4;j++){let x=spread*(.7+j*.23),y=-.06-(j*.045)*(i===0?.7:1),z=Math.max(0,Math.sin(t*.7+i*.55+id))*.018*j;if(i===0)x-=.035;const xx=x*Math.cos(rotation)-y*Math.sin(rotation),yy=x*Math.sin(rotation)+y*Math.cos(rotation);p[chain[j]]={x:cx+xx*sign,y:cy+yy,z};}}p[0]={x:cx,y:cy+.05,z:0};landmarks.push(p);worldLandmarks.push(p);}return {landmarks,worldLandmarks,handedness:[[{categoryName:'Left'}],[{categoryName:'Right'}]]};}
-async function frame(time){requestAnimationFrame(frame);if(document.hidden)return;if(fading&&time-lastFadeRender>=33){renderFade(time);lastFadeRender=time;}if(source==='demo'&&time-lastSend>33){lastSend=time;process(demoResult(time/1000),time);}if(source==='camera'&&ready&&!busy&&video.readyState>=2&&video.currentTime!==lastVideo&&time-lastSend>33){busy=true;lastSend=time;lastVideo=video.currentTime;const sentSession=session;try{const bitmap=await createImageBitmap(video);if(source!=='camera'||sentSession!==session){bitmap.close();busy=false;return;}worker.postMessage({type:'frame',bitmap,time,session:sentSession},[bitmap]);}catch(e){busy=false;stop();status('Unable to read camera frames. Please enable your camera again: '+e.message,true);}}if(immersive){renderShadows(current.filter(h=>time-h.time<350).map(h=>h.shadowPoints));}else if(source!=='none')drawView();else vctx.clearRect(0,0,W,H);}
-document.addEventListener('visibilitychange',()=>{resetTracks();if(document.hidden&&source!=='none')setPaused(true);});window.addEventListener('pagehide',()=>{stop();worker?.terminate();});requestAnimationFrame(frame);
+async function frame(time){requestAnimationFrame(frame);if(document.hidden)return;if(fading&&time-lastFadeRender>=33){renderFade(time);lastFadeRender=time;}if(source==='demo'&&time-lastSend>33){lastSend=time;process(demoResult(time/1000),time);}if(source==='camera'&&ready&&!busy&&video.readyState>=2&&video.currentTime!==lastVideo&&time-lastSend>33){busy=true;lastSend=time;lastVideo=video.currentTime;const sentSession=session;try{const bitmap=await createImageBitmap(video);if(source!=='camera'||sentSession!==session){bitmap.close();busy=false;return;}worker.postMessage({type:'frame',bitmap,time,session:sentSession},[bitmap]);}catch(e){busy=false;stop();status('Unable to read camera frames. Please enable your camera again: '+e.message,true);}}if(immersive){if(source==='camera'){shadowRenderer.update(video,current,rect,time);}else{$('shadow-state').textContent=source==='demo'?'Demo has no camera pixels. Enable camera for real hand shadows.':'Enable camera for real hand shadows.';}}else if(source!=='none')drawView();else vctx.clearRect(0,0,W,H);}
+document.addEventListener('visibilitychange',()=>{resetTracks();if(document.hidden&&source!=='none')setPaused(true);});window.addEventListener('pagehide',()=>{stop();worker?.terminate();shadowRenderer.close();});requestAnimationFrame(frame);
