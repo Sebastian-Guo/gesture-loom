@@ -5,11 +5,27 @@
 /* One coordinate system for artwork and live hand silhouettes. */
 #shadows{position:absolute;inset:0;pointer-events:none;filter:blur(.65px)}
 #immersive[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
-body.immersive header,body.immersive .intro>div:first-child,body.immersive .gesture-guide,body.immersive footer,body.immersive .workspace>.panel:nth-child(2),body.immersive .check{display:none}
-body.immersive main{max-width:1720px;padding-top:16px}
-body.immersive .intro{justify-content:flex-end;margin-bottom:12px}
-body.immersive .workspace{display:block;max-width:min(100%,calc((100dvh - 270px)*4/3));margin:0 auto}
-body.immersive .panel-head,body.immersive .panel-foot{padding:9px 14px}
-body.immersive .settings{padding:16px 0}
+body.immersive{overflow:hidden;background:var(--paper)}
+body.immersive header,body.immersive .intro>div:first-child,body.immersive .gesture-guide,body.immersive footer,body.immersive .workspace>.panel:nth-child(2),body.immersive .check,body.immersive .panel-head,body.immersive .panel-foot{display:none}
+/* The complete 4:3 artwork fits the largest possible viewport rectangle. */
+body.immersive .workspace{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;max-width:none;margin:0;gap:0;z-index:0;pointer-events:none}
+body.immersive .workspace>.panel:first-child{width:min(100vw,calc(100dvh * 4 / 3));flex:none;border:0;border-radius:0;background:var(--paper)}
 body.immersive .paper .empty{opacity:.6}
-@media(max-width:700px){body.immersive .workspace{max-width:100%}body.immersive main{padding-top:12px}}
+body.immersive main{position:fixed;inset:0;max-width:none;margin:0;padding:70px 16px 16px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;overflow-y:auto;pointer-events:none}
+body.immersive main>.intro,body.immersive main>.toolbar,body.immersive main>.settings,body.immersive main>.statusbar{display:none}
+#immersive-dock{position:fixed;top:12px;right:12px;z-index:10;display:flex;gap:8px}
+#immersive-dock button{background:#fffdf8e8;box-shadow:0 2px 12px #293c3e12;backdrop-filter:blur(8px);font-size:12px}
+#immersive-dock button:hover{background:#eae9e2}
+body.immersive.immersive-controls-open main>.intro,body.immersive.immersive-controls-open main>.toolbar,body.immersive.immersive-controls-open main>.settings,body.immersive.immersive-controls-open main>.statusbar{display:flex;position:relative;z-index:2;pointer-events:auto;flex-shrink:0;width:min(430px,100%);margin:0;padding:14px;background:#fffdf8f5;border:1px solid var(--line);border-radius:9px;box-shadow:0 3px 18px #293c3e12;backdrop-filter:blur(10px)}
+body.immersive .intro{justify-content:flex-end}
+body.immersive .toolbar{flex-direction:column;align-items:stretch;gap:12px}
+body.immersive .modes{min-width:0}
+body.immersive .modes button{padding:10px 7px;flex:1}
+body.immersive .modes button span{margin-left:4px;font-size:12px}
+body.immersive .actions{width:100%;margin:0;justify-content:flex-start}
+body.immersive .actions #immersive{display:none}
+body.immersive .settings{gap:24px;flex-wrap:wrap}
+body.immersive .settings>label{min-width:140px}
+body.immersive .palette{margin-left:0}
+body.immersive .shortcuts{display:none}
+@media(max-width:700px){#immersive-dock{top:8px;right:8px}body.immersive main{padding:62px 8px 12px}body.immersive .intro{align-items:flex-end}}

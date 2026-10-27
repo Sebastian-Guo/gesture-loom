@@ -9,8 +9,10 @@ let fading=false,replaying=false,fadeAmount=1,lastFadeRender=0;
 const history=new FadeHistory();
 let immersive=false;
 const renderShadows=createShadowRenderer($('shadows'));
-function setImmersive(value){immersive=value;document.body.classList.toggle('immersive',value);$('shadows').hidden=!value;$('immersive').setAttribute('aria-pressed',String(value));$('immersive').textContent=value?'Exit immersive mode':'Immersive mode';renderShadows(value?current.map(h=>h.shadowPoints):[]);}
+function setImmersive(value){immersive=value;$('immersive-dock').hidden=!value;document.body.classList.remove('immersive-controls-open');$('immersive-controls').textContent='Show controls';$('immersive-controls').setAttribute('aria-expanded','false');document.body.classList.toggle('immersive',value);$('shadows').hidden=!value;$('immersive').setAttribute('aria-pressed',String(value));$('immersive').textContent=value?'Exit immersive mode':'Immersive mode';renderShadows(value?current.map(h=>h.shadowPoints):[]);}
 $('immersive').onclick=()=>setImmersive(!immersive);
+$('immersive-exit').onclick=()=>setImmersive(false);
+$('immersive-controls').onclick=()=>{const open=document.body.classList.toggle('immersive-controls-open');$('immersive-controls').textContent=open?'Hide controls':'Show controls';$('immersive-controls').setAttribute('aria-expanded',String(open));};
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('guide').open)setImmersive(false);});
 let rect=contain(640,480),width=12,smoothing=.65,opacity=.35;
 const notes={ink:'Ten independent tips · Curl fingers to lift the brush',ribbon:'Adjacent fingers weave translucent ribbons',web:'Matching fingertips connect · Requires both hands'};
